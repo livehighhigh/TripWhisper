@@ -42,9 +42,13 @@ WebMCP: 在支持 document.modelContext 的浏览器注册只读 read_trip_summa
 
 public/como.jpg：Diego Delso，Lake Como，2016-06-25。来源 https://commons.wikimedia.org/wiki/File:Lago_de_Como,_Italia,_2016-06-25,_DD_02-06_PAN.jpg ，CC BY-SA 4.0；已缩小，界面按容器裁切展示。修改后的图片同样按 CC BY-SA 4.0 提供。照片许可证不扩展到其他源代码。
 
+## 产品说明（已实现）
+
+模块划分、交互、业务规则与代码路径以 [`docs/product/`](./docs/product/README.md) 为准，并随行为变化的 PR 同步更新。
+
 ## 产品方案与团队讨论
 
 - [产品方案与开发路线](./产品方案与开发路线.html)
 - [第一步产品需求定义](./docs/第一步_产品需求定义_v0.1.md)
 
-源码现已加入仓库，实际完成范围以本 README 为准；方案中的后续能力不代表已经实现。
+讨论稿中的后续能力不代表已经实现。验收与评审请对照 `docs/product/`，而不是对照 HTML 方案。
