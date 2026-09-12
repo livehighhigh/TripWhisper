@@ -47,18 +47,21 @@
 **主要交互**
 
 - 示意条：米兰车站 → 市中心 / 大教堂 → 布雷拉与城堡；米兰 → 火车 → 科莫镇 → 湖岸。
-- 四张地点卡：大教堂、布雷拉、科莫湖、米兰公共交通；外链官网。
+- 四张地点卡：大教堂、布雷拉、科莫湖、米兰公共交通；每张带来源 URL、示范内容编入时间、内容状态「待核验」。
 - 额外 Trenord 区域火车入口。
 
 **关键规则**
 
 - 文案写明：示意不是按比例地图；跳转后在对方网站自行选票支付；本站无库存、不代下单。
-- 卡片数据写在 `app/page.tsx` 的 `placeCards`，官网 URL 来自 `lib/journey.ts` 的 `sources`。
+- 卡片数据在 `lib/content.ts` 的 `explorePlaceCards`；官网 URL 来自 `lib/journey.ts` 的 `sources`。
+- 未核验的营业、班次、票价、余票不写成实时事实。
 
 **代码路径**
 
 - `app/page.tsx`（`explore` TabsContent）
+- `lib/content.ts`（`explorePlaceCards`、`resolveProvenance`）
 - `lib/journey.ts`（`sources`）
+- `components/travel/provenance.tsx`
 
 ---
 
@@ -68,22 +71,23 @@
 
 **主要交互**
 
-- 按天列出日期、城市、标题、原因、`时间 名称〔已订〕` 串。
+- 按天列出日期、城市、标题、原因、`时间 名称〔示范内容 · 待核验〕` 或 `〔你录入的 · 待核验〕` 串。
 - 「打开这一天的行动卡」：设 `day` 并切到 `today`。
 - 「打印 / 存为 PDF」：`window.print()`。
-- 侧栏：活动估算 vs 所设预算；偏好如何影响安排；导出 JSON 备份。
+- 侧栏：活动估算 vs 所设预算；偏好如何影响安排；导出 JSON 备份（含来源、状态、示范/你录入标签）。
 
 **关键规则**
 
 - 活动估算 = 所有 `stop.cost` 之和 × `people`。不含机票、住宿、未安排餐饮与额外市内交通。是演示估值，不是报价。
 - 估算超预算时标红提示；**不会**自动改行程。
 - 确认重排之前，本页时间表不变（预览只活在每日卡侧栏）。确认后本页、日卡、估算一起变。
-- JSON 备份包含 `journey`、`memories`、`saved`、`expenses`、`checks`，不含内存中的 `previous`。
+- JSON 备份包含 `journey`、`memories`、`saved`、`expenses`、`checks`，不含内存中的 `previous`。导出时为每站补上 `provenance` 与 `exportLabels`，并写明示范内容不是实时营业 / 班次 / 票价。账本整体标为「你录入的 · 待核验」。
 
 **代码路径**
 
 - `app/page.tsx`（`plan`、`estimate`、`exportTrip`）
 - `lib/journey.ts`（`estimate`、`dateAt`）
+- `lib/content.ts`（`exportTripPayload`、`stopExportLabel`）
 
 ---
 
@@ -128,8 +132,8 @@
 - 四章芯片：准备出发、看懂目的地、交通与订票、当地常用语。
 - 「打印这一章」：`window.print()`。
 - 准备出发：7 项勾选，进度 `n / 7`。
-- 看懂目的地：按当前行程 stop 去重后展示 story / tip / 官网（排除「我的预订」）。
-- 交通与订票：ATM / Trenord / 游船官网及预订注意。
+- 看懂目的地：按当前行程 stop 去重后展示 story / tip / 来源与待核验状态；示范地点与「你录入的」预订地点分开列出。
+- 交通与订票：ATM / Trenord / 游船官网及预订注意；交通卡同样带来源、编入时间和「待核验」。
 - 常用语：固定 5 句，不是翻译引擎。
 
 **关键规则**
@@ -143,7 +147,8 @@
 
 - `components/travel/handbook.tsx`
 - 勾选状态：`app/page.tsx`（`checks`）
-- 官网：`lib/journey.ts`（`sources`）
+- 官网与来源：`lib/journey.ts`（`sources`）、`lib/content.ts`
+- 来源徽章：`components/travel/provenance.tsx`
 
 ---
 
@@ -155,14 +160,16 @@
 
 - Day 芯片切换 `day`；展示版本号、日期、城市、标题、原因、路线条、每站 `StopCard`。
 - 「保存今日行程图」：按当前 `journey` + `day` 画 PNG 下载（不是网页截图）。
-- 每站：当地名、地址、类型、人均预算参考、交通、可展开故事 / 提醒、Google Maps、可选官网。
+- 每站：当地名、地址、类型、人均金额说明（示范估值或你记下的，均待核验、不是实时票价）、交通、可展开故事 / 提醒、Google Maps、来源 / 官网。
+- 每站显示来源 URL、编入或录入时间、内容状态「待核验」，以及「示范内容」或「你录入的」。
+- 计划时段明确写为不是已核验营业时间或班次。
 - `locked` 显示「已订 · 保留」。
 - 右侧：`ReplanPanel` + 创始人经验提示 + 当天纸质清单（天气未接入）。
 
 **关键规则**
 
 - 卡片数据全部来自 `journey.days[day]`，与全程安排同源。
-- PNG 含时间、地址、交通、锁定文案和版本号；页脚写明未实时核验。
+- PNG 含时间、地址、交通、锁定文案、版本号，以及示范 / 你录入与「待核验」；页脚写明未实时核验。
 - 重排确认后日卡立刻反映新 stops；确认前侧栏预览不影响卡片列表。
 
 **代码路径**
@@ -170,6 +177,7 @@
 - `app/page.tsx`（`today`、`StopCard`、`directions`）
 - `lib/export-card.ts`（`exportDayCard`）
 - `lib/journey.ts`（`directions`）
+- `lib/content.ts`（`resolveProvenance`、`costCaption`）
 - 侧栏：`components/travel/replan.tsx`
 
 ---
@@ -192,7 +200,7 @@
 - 人民币：`eurMinor = round(amountMinor / rate)`，按**录入当时**汇率固化，之后改展示汇率不回算旧账。
 - 汇率须为有限正数且 ≤ 100；默认输入框 `8.00` 仅为演示。
 - 统计不乘人数（用户应记整笔账单）。
-- 账本**不会**自动写入行程 `stop.cost`，行程估算也不会自动变成账单。
+- 账本**不会**自动写入行程 `stop.cost`，行程估算也不会自动变成账单。账本记录在 UI 和导出中标为「你录入的 · 待核验」；行程活动金额是示范估值且待核验。
 - 随旅行 JSON 备份导出；只存在本浏览器。
 
 **代码路径**

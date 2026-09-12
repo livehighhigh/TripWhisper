@@ -1,3 +1,8 @@
+import {
+  formatFetchedAt,
+  resolveProvenance,
+  stopExportLabel,
+} from './content';
 import { dateAt, type Journey } from './journey';
 // A code-rendered itinerary document, not a screenshot of the interface.
 export async function exportDayCard(j: Journey, index: number) {
@@ -21,18 +26,28 @@ export async function exportDayCard(j: Journey, index: number) {
     if (line) lines.push(line);
     return lines;
   }
-  const rows = day.stops.map((s) => ({
-    stop: s,
-    names: wrap(s.name, 760, 34),
-    address: wrap(s.address, 760, 25),
-    transport: wrap(s.transport, 760, 26),
-  }));
+  const rows = day.stops.map((s) => {
+    const p = resolveProvenance(s);
+    return {
+      stop: s,
+      names: wrap(s.name, 760, 34),
+      address: wrap(s.address, 760, 25),
+      transport: wrap(s.transport, 760, 26),
+      provenance: wrap(
+        `${stopExportLabel(s)}  ·  来源 ${p.sourceUrl || '未提供来源链接'}  ·  ${formatFetchedAt(p.fetchedAt)}`,
+        760,
+        22,
+      ),
+    };
+  });
   const heights = rows.map(
     (r) =>
       100 +
       r.names.length * 45 +
       r.address.length * 35 +
-      r.transport.length * 37,
+      r.transport.length * 37 +
+      r.provenance.length * 30 +
+      36,
   );
   const title = wrap(day.title, 940, 48);
   canvas.height =
@@ -94,17 +109,22 @@ export async function exportDayCard(j: Journey, index: number) {
       ty += 37;
     });
     text(
-      r.stop.locked ? '已锁定 · 时间保留' : r.stop.kind,
+      (r.stop.locked ? '已锁定 · 时间保留 · ' : '') + stopExportLabel(r.stop),
       230,
       ty + 8,
       23,
       '#08758c',
     );
+    ty += 40;
+    r.provenance.forEach((line) => {
+      text(line, 230, ty, 22, '#688593');
+      ty += 30;
+    });
     y += heights[i] + 22;
   });
   text('出发前，再确认一下。', 60, y + 38, 29, '#084f69', 'bold');
   text(
-    '开放时间、天气和班次未实时核验；交通时长是估算。',
+    '开放时间、天气、班次和票价未实时核验；示范估值不是报价。',
     60,
     y + 84,
     24,

@@ -732,6 +732,37 @@ textarea[data-slot='textarea'] {
 .journey-tabs button {
   flex: 1 0 auto !important;
 }
+.provenance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: 8px 0 10px;
+}
+.tag.provenance-status {
+  background: #f8eedd;
+  color: #8a5a12;
+}
+.tag.provenance-origin.origin-demo {
+  background: #e8eef2;
+  color: #3d5a68;
+}
+.tag.provenance-origin.origin-user {
+  background: #e6f3ea;
+  color: #215c38;
+}
+.provenance-meta {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: #58717f;
+  margin: 2px 0 0;
+  line-height: 1.55;
+}
+.place .provenance-meta,
+.stop .provenance-meta,
+.story-chapter .provenance-meta {
+  word-break: break-word;
+}
 @media (max-width: 500px) {
   .budget-summary {
     padding: 16px;

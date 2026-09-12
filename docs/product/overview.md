@@ -41,7 +41,8 @@ Journey
 Stop
 ├── 时段 time–end、中英名称、地址、kind、交通说明、人均 cost
 ├── story / tip、可选 url、outdoor
-└── locked      已订则重排与下雨不移动该时段
+├── locked      已订则重排与下雨不移动该时段
+└── provenance  可选；来源 origin / 状态 status / sourceUrl / fetchedAt
 ```
 
 并列、但不在 `Journey` 里的状态（均在 `app/page.tsx`）：
@@ -59,7 +60,7 @@ Stop
 
 ## 演示数据 ≠ 实时事实
 
-代码内的米兰 / 科莫地点、故事、票价、交通时长是 **示范内容**，不是现场营业、班次、余票或报价。
+代码内的米兰 / 科莫地点、故事、票价、交通时长是 **示范内容**，不是现场营业、班次、余票或报价。地点卡、手册条目、每日行动卡和导出都会标出 **来源 URL、编入/记录时间、内容状态**。未核验项固定显示「待核验」；示范内容与你录入的预订 / 账本分开标注。营业、班次、价格、余票在未核验时不会写成实时事实。
 
 | 用户可能以为是真的 | 当前实际 |
 | --- | --- |
@@ -72,7 +73,7 @@ Stop
 | 本机保存 | 仅当前浏览器 `localStorage`，无云同步 |
 | WebMCP `read_trip_summary` | 浏览器提供 `document.modelContext` 时注册的只读摘要；**不是 EvoMap 集成** |
 
-内容可追溯与「待核验」展示见 [Issue #5](https://github.com/3013038780-design/TripWhisper/issues/5)。云端持久化见 [Issue #6](https://github.com/3013038780-design/TripWhisper/issues/6)。EvoMap 最小工作流见 [Issue #7](https://github.com/3013038780-design/TripWhisper/issues/7)。
+地点来源与「待核验」边界见下方与 [modules.md](./modules.md)。云端持久化见 [Issue #6](https://github.com/3013038780-design/TripWhisper/issues/6)。EvoMap 最小工作流见 [Issue #7](https://github.com/3013038780-design/TripWhisper/issues/7)。
 
 页脚与各模块文案已写明：体验版、须自行核实开放时间 / 天气 / 库存。
 
@@ -86,9 +87,11 @@ app/globals.css                 工作台样式
 components/travel/bookings.tsx  预订录入 / 预览确认 / 移除 / 只读体检
 components/travel/budget.tsx    账本 UI
 components/travel/handbook.tsx  手册四章
+components/travel/provenance.tsx 来源 URL / 待核验 / 示范或你录入
 components/travel/replan.tsx    晚出门 / 少走路 / 下雨 预览确认、恢复上一版
 
 lib/journey.ts                  类型、示范地点、generate、adjust（下雨）、estimate
+lib/content.ts                  地点来源、核验状态、示范/用户录入标注、导出标签
 lib/replan.ts                   受约束重排预览（不写当前行程）
 lib/workspace.ts                预订冲突、带预订再生成、账本、auditJourney
 lib/export-card.ts              当日行程 PNG（画布绘制，不是截图）
@@ -96,6 +99,7 @@ lib/export-card.ts              当日行程 PNG（画布绘制，不是截图�
 tests/journey.test.mjs          生成、锁定、兴趣、下雨/休息不改锁定项
 tests/workspace.test.mjs        预订保留、缓冲、金额
 tests/replan.test.mjs           预览隔离、锁定交通、顺延/压缩/移除
+tests/content.test.mjs          来源、待核验、示范 vs 你录入、导出区分
 ```
 
 `components/ui/` 是通用控件，不含旅行业务规则。
@@ -105,7 +109,6 @@ tests/replan.test.mjs           预览隔离、锁定交通、顺延/压缩/移�
 | 缺口 | Issue |
 | --- | --- |
 | 行程体检 → 修复建议 → 确认应用 | [#4](https://github.com/3013038780-design/TripWhisper/issues/4) |
-| 地点来源、核验时间、演示/用户数据可区分 | [#5](https://github.com/3013038780-design/TripWhisper/issues/5) |
 | 服务端编排、密钥、跨设备恢复 | [#6](https://github.com/3013038780-design/TripWhisper/issues/6) |
 | EvoMap OAuth / 检索 / 复用工作流 | [#7](https://github.com/3013038780-design/TripWhisper/issues/7) |
 | 多版本历史与任意回退 | [#9](https://github.com/3013038780-design/TripWhisper/issues/9) |

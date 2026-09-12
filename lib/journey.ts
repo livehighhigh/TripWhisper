@@ -9,6 +9,14 @@ export type Profile = {
   luggage: boolean;
   booked: boolean;
 };
+export type ContentOrigin = 'demo' | 'user';
+export type ContentStatus = 'unverified';
+export type Provenance = {
+  origin: ContentOrigin;
+  status: ContentStatus;
+  sourceUrl: string;
+  fetchedAt: string;
+};
 export type Stop = {
   id: string;
   time: string;
@@ -24,6 +32,7 @@ export type Stop = {
   url?: string;
   outdoor?: boolean;
   locked?: boolean;
+  provenance?: Provenance;
 };
 export type Day = {
   title: string;

@@ -8,7 +8,16 @@ import { exportDayCard } from '@/lib/export-card';
 import { Budget } from '@/components/travel/budget';
 import { Bookings } from '@/components/travel/bookings';
 import { Handbook } from '@/components/travel/handbook';
+import { ProvenanceMeta } from '@/components/travel/provenance';
 import { ReplanPanel } from '@/components/travel/replan';
+import {
+  costCaption,
+  explorePlaceCards,
+  exportTripPayload,
+  preserveUserProvenance,
+  resolveProvenance,
+  stopExportLabel,
+} from '@/lib/content';
 import {
   regenerateWithBookings,
   safeExpense,
@@ -36,33 +45,8 @@ import {
   type Stop,
 } from '@/lib/journey';
 const KEY = 'tripwhisper-local-v1';
-const placeCards = [
-  [
-    '米兰大教堂',
-    '城市的起点',
-    '广场、哥特式建筑与玻璃拱廊集中在市中心。适合安排在同一半天。',
-    sources.duomo,
-  ],
-  [
-    '布雷拉',
-    '艺术与小街道',
-    '美术馆与街区一起看。预约与开放日请查官方信息。',
-    sources.brera,
-  ],
-  [
-    '科莫湖',
-    '轻装的一日往返',
-    '先探索科莫镇，再按当天船班决定是否游船。行李多时减少换住宿。',
-    sources.ferry,
-  ],
-  [
-    '米兰公共交通',
-    '从住处开始查路线',
-    '地铁、公交与电车以 ATM 公布的线路、票种和运营信息为准。',
-    sources.metro,
-  ],
-];
 function StopCard({ stop }: { stop: Stop }) {
+  const provenance = resolveProvenance(stop);
   return (
     <article className="stop">
       <div className="time">
@@ -83,10 +67,12 @@ function StopCard({ stop }: { stop: Stop }) {
         <p>
           <MapPin size={13} style={{ display: 'inline' }} /> {stop.address}
         </p>
+        <ProvenanceMeta provenance={provenance} />
         <div className="row">
           <span className="tag">{stop.kind}</span>
-          <span className="muted">预算参考 €{stop.cost} / 人</span>
+          <span className="muted">{costCaption(stop)}</span>
         </div>
+        <p className="muted">计划时段，不是已核验的营业时间或班次。</p>
         <p>{stop.transport}</p>
         <details>
           <summary className="small-link">背景故事与到访提醒</summary>
@@ -102,14 +88,14 @@ function StopCard({ stop }: { stop: Stop }) {
           >
             地图导航 <ArrowUpRight size={14} />
           </a>
-          {stop.url && (
+          {provenance.sourceUrl && (
             <a
               className="small-link"
-              href={stop.url}
+              href={provenance.sourceUrl}
               target="_blank"
               rel="noreferrer"
             >
-              官网 / 订票入口 ↗
+              来源 / 官网 ↗
             </a>
           )}
         </div>
@@ -257,7 +243,10 @@ export default function Home() {
   }
   function build() {
     try {
-      const next = regenerateWithBookings(profile, memories, journey);
+      const next = preserveUserProvenance(
+        journey,
+        regenerateWithBookings(profile, memories, journey),
+      );
       setBusy(true);
       setTimeout(() => {
         setPrevious(journey);
@@ -273,7 +262,13 @@ export default function Home() {
   }
   function exportTrip() {
     const file = new Blob(
-      [JSON.stringify({ journey, memories, saved, expenses, checks }, null, 2)],
+      [
+        JSON.stringify(
+          exportTripPayload(journey, { memories, saved, expenses, checks }),
+          null,
+          2,
+        ),
+      ],
       { type: 'application/json' },
     );
     const url = URL.createObjectURL(file);
@@ -344,7 +339,7 @@ export default function Home() {
               journey={journey}
               onApply={(next) => {
                 setPrevious(journey);
-                setJourney(next);
+                setJourney(preserveUserProvenance(journey, next));
                 setMessage('预订记录已更新，行程与每日卡已同步。');
               }}
             />
@@ -488,6 +483,9 @@ export default function Home() {
                             s.time +
                             ' ' +
                             s.name +
+                            '〔' +
+                            stopExportLabel(s) +
+                            '〕' +
                             (s.locked ? '〔已订〕' : ''),
                         )
                         .join(' → ')}
@@ -529,7 +527,7 @@ export default function Home() {
                   </p>
                   <p className="note">
                     按 {journey.profile.people}{' '}
-                    人合计。金额为演示估值，不是报价；不含机票、住宿、未安排餐饮与额外市内交通。
+                    人合计。金额为示范估值且待核验，不是实时票价或报价；不含机票、住宿、未安排餐饮与额外市内交通。
                   </p>
                 </section>
                 <section className="panel">
@@ -566,21 +564,22 @@ export default function Home() {
                 科莫镇 → 湖岸
               </div>
               <p className="note">
-                以上是区域关系示意，不是按比例地图。交通方式与班次请在对应官网核实。
+                以上是区域关系示意，不是按比例地图。地点卡均为示范内容，营业、班次、票价待核验。
               </p>
               <div className="places">
-                {placeCards.map(([name, tag, desc, url]) => (
-                  <article className="place" key={name}>
-                    <span className="tag">{tag}</span>
-                    <h3>{name}</h3>
-                    <p>{desc}</p>
+                {explorePlaceCards.map((card) => (
+                  <article className="place" key={card.name}>
+                    <span className="tag">{card.tag}</span>
+                    <h3>{card.name}</h3>
+                    <ProvenanceMeta provenance={card.provenance} />
+                    <p>{card.desc}</p>
                     <a
                       className="small-link"
-                      href={url}
+                      href={card.provenance.sourceUrl}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      打开官方网站 ↗
+                      打开来源网站 ↗
                     </a>
                   </article>
                 ))}
@@ -905,7 +904,7 @@ export default function Home() {
         </Tabs>
         <footer className="footer">
           <p>
-            体验版：精选资料与规则驱动，尚未接入真实大模型。票价、交通时长为示范估算，开放时间、天气及库存须出发前自行核实。
+            体验版：精选资料与规则驱动，尚未接入真实大模型。票价、交通时长为示范估算且待核验；开放时间、天气及库存须出发前自行核实。示范内容与你录入的数据已分别标注。
           </p>
           <p>
             照片：

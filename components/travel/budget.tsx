@@ -5,7 +5,7 @@ import {
   NativeSelect,
   NativeSelectOption,
 } from '@/components/ui/native-select';
-import { Wallet, Plus, Trash2, ArrowUpRight } from 'lucide-react';
+import { Wallet, Plus, Trash2 } from 'lucide-react';
 import { createExpense, dailyExpenses, type Expense } from '@/lib/workspace';
 import { dateAt, type Journey } from '@/lib/journey';
 export function Budget({
@@ -57,7 +57,7 @@ export function Budget({
           <Wallet size={26} />
         </div>
         <p className="note">
-          按整组同行者的实际支出记账，不会再次乘以人数。仅统计当前行程日期内的账目。
+          按整组同行者的实际支出记账，不会再次乘以人数。仅统计当前行程日期内的账目。这些记录是你录入的，不是行程示范估值，也不是实时汇率或票价。
         </p>
         <div className="budget-summary">
           <div>
@@ -117,7 +117,7 @@ export function Budget({
                 <div>
                   <strong>{e.name}</strong>
                   <p className="muted">
-                    {e.date} · {e.category}
+                    你录入的 · 待核验 · {e.date} · {e.category}
                     {e.date < journey.profile.date || e.date > end
                       ? ' · 不在本次统计日期'
                       : ''}
@@ -247,7 +247,7 @@ export function Budget({
         <section className="panel">
           <h3>预算与估算分开看</h3>
           <p className="note">
-            这里是你实际记录的花费。「全程安排」里的数字是行程估算，不会自动变成账单。
+            本页是你录入的实际支出，已标注为「你录入的 · 待核验」：手记金额，不是实时牌价。「全程安排」里的活动金额是示范估值且待核验，不会自动变成账单。
           </p>
           <p className="note">
             记账目前在本浏览器保存。可在全程安排导出包含账本的旅行备份。

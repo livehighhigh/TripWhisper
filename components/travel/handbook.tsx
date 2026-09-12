@@ -2,7 +2,9 @@
 import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BookOpen, Download } from 'lucide-react';
-import { sources, type Journey } from '@/lib/journey';
+import { handbookTransportCards, resolveProvenance } from '@/lib/content';
+import { ProvenanceMeta } from '@/components/travel/provenance';
+import type { Journey } from '@/lib/journey';
 const phrases = [
   ['Buongiorno', '你好 / 早上好'],
   ['Un biglietto per Como, per favore.', '请给我一张去科莫的票。'],
@@ -25,6 +27,14 @@ export function Handbook({
       journey.days
         .flatMap((d) => d.stops)
         .filter((s) => s.kind !== '我的预订')
+        .map((s) => [s.name, s]),
+    ).values(),
+  );
+  const userPlaces = Array.from(
+    new Map(
+      journey.days
+        .flatMap((d) => d.stops)
+        .filter((s) => s.kind === '我的预订')
         .map((s) => [s.name, s]),
     ).values(),
   );
@@ -88,58 +98,63 @@ export function Handbook({
         )}
         {chapter === '看懂目的地' && (
           <>
+            <p className="note">
+              以下背景来自当前行程里的示范地点。开放时间、票价和预约都标为待核验，请以官网为准。
+            </p>
             {stories.map((s, i) => (
               <article className="story-chapter" key={s.name}>
                 <span className="eyebrow">
                   CHAPTER {String(i + 1).padStart(2, '0')} · {s.kind}
                 </span>
                 <h3>{s.name}</h3>
+                <ProvenanceMeta provenance={resolveProvenance(s)} />
                 <p>{s.story}</p>
                 <blockquote>{s.tip}</blockquote>
-                {s.url && (
-                  <a
-                    className="small-link"
-                    href={s.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    官方资料与到访信息 ↗
-                  </a>
-                )}
               </article>
             ))}
+            {userPlaces.length > 0 && (
+              <>
+                <p className="note">
+                  下面是你录入的预订地点，与上方示范内容分开列出。金额与时段仍待核验。
+                </p>
+                {userPlaces.map((s) => (
+                  <article className="story-chapter" key={'user-' + s.id}>
+                    <span className="eyebrow">你录入的 · {s.kind}</span>
+                    <h3>{s.name}</h3>
+                    <ProvenanceMeta provenance={resolveProvenance(s)} />
+                    <p>{s.story}</p>
+                    <blockquote>{s.tip}</blockquote>
+                  </article>
+                ))}
+              </>
+            )}
           </>
         )}
         {chapter === '交通与订票' && (
           <>
-            <article className="story-chapter">
-              <h3>先确定站名，再选车票</h3>
-              <p>
-                米兰市内交通查看 ATM；前往科莫的区域火车查看
-                Trenord。把出发站、到达站、日期和返程计划放在一起确认，不要只凭目的地名称买票。
-              </p>
-              <div className="row">
-                <a href={sources.metro} target="_blank" rel="noreferrer">
-                  ATM 市内交通 ↗
-                </a>
-                <a href={sources.train} target="_blank" rel="noreferrer">
-                  Trenord 火车 ↗
-                </a>
-              </div>
-            </article>
-            <article className="story-chapter">
-              <h3>游船不是随到随走的地铁</h3>
-              <p>
-                在官方时刻表确认码头、船型、方向及当天末班船。没有合适往返时段时，保留湖边散步，不必为了打卡赶船。
-              </p>
-              <a href={sources.ferry} target="_blank" rel="noreferrer">
-                科莫湖游船官网 ↗
-              </a>
-            </article>
+            {handbookTransportCards.map((card) => (
+              <article className="story-chapter" key={card.title}>
+                <h3>{card.title}</h3>
+                <ProvenanceMeta provenance={card.provenance} />
+                <p>{card.body}</p>
+                <div className="row">
+                  {card.links.map((link) => (
+                    <a
+                      key={link.href + link.label}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </article>
+            ))}
             <article className="story-chapter">
               <h3>预订前看三件事</h3>
               <p>
-                日期与入场时段、票种包含的内容、改退规则。付款完成后保管确认邮件或票券；本网站的“锁定”只保护行程安排，不是购买确认。
+                日期与入场时段、票种包含的内容、改退规则。付款完成后保管确认邮件或票券；本网站的“锁定”只保护行程安排，不是购买确认。票价与余票在此一律待核验。
               </p>
             </article>
           </>
