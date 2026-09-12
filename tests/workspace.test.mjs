@@ -6,7 +6,7 @@ import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 const dir=mkdtempSync(join(tmpdir(),'tripwhisper-tests-'));
 try{
- for(const name of ['journey','workspace']){const text=readFileSync(new URL('../lib/'+name+'.ts',import.meta.url),'utf8');let out=ts.transpileModule(text,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText.replace(/from ['"]\.\/journey['"]/g,"from './journey.mjs'");writeFileSync(join(dir,name+'.mjs'),out)}
+ for(const name of ['journey','replan','health','workspace']){const text=readFileSync(new URL('../lib/'+name+'.ts',import.meta.url),'utf8');const out=ts.transpileModule(text,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText.replace(/from ['"]\.\/journey['"]/g,"from './journey.mjs'").replace(/from ['"]\.\/replan['"]/g,"from './replan.mjs'").replace(/from ['"]\.\/health['"]/g,"from './health.mjs'");writeFileSync(join(dir,name+'.mjs'),out)}
  const {generate,initialProfile,adjust}=await import(pathToFileURL(join(dir,'journey.mjs')));
  const {previewBooking,regenerateWithBookings,parseMoney,createExpense,dailyExpenses}=await import(pathToFileURL(join(dir,'workspace.mjs')));
  const j=generate(initialProfile);const input={date:initialProfile.date,name:'音乐会',address:'Teatro alla Scala, Milano',time:'19:30',end:'21:00',cost:'38.90',url:'https://www.teatroallascala.org/'};

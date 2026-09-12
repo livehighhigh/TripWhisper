@@ -262,6 +262,7 @@ button:disabled {
   padding: 5px !important;
   background: #e6edf2 !important;
   display: flex !important;
+  flex-wrap: wrap !important;
 }
 .journey-tabs button {
   padding: 12px !important;
@@ -448,6 +449,24 @@ textarea {
 .replan-preview .tag {
   margin-right: 4px;
 }
+.health-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.health-finding {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.health-finding:last-of-type {
+  border-bottom: 0;
+  margin-bottom: 12px;
+}
+.health-finding .check {
+  padding: 4px 0 8px;
+  font-weight: 600;
+}
+.health-finding .note {
+  margin: 6px 0;
+}
 .empty {
   padding: 40px;
   text-align: center;
@@ -472,7 +491,8 @@ textarea {
   margin: 8px 0;
 }
 @media (max-width: 850px) {
-  .grid {
+  .grid,
+  .health-grid {
     grid-template-columns: 1fr;
   }
   .workspace {

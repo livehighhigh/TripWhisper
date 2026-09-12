@@ -13,6 +13,7 @@ TripWhisper 是面向中文用户的 **米兰 + 科莫湖 3—5 天** 旅行工�
 | 旅行偏好 | `profile` | 填日期 / 人数 / 预算 / 兴趣，生成行程 | [modules.md § 旅行偏好](./modules.md#旅行偏好与行程生成) |
 | 认识目的地 | `explore` | 看区域关系与官网入口 | [modules.md § 认识目的地](./modules.md#认识目的地) |
 | 全程安排 | `plan` | 看整段手账、活动估算、打印 / 导出 | [modules.md § 全程安排](./modules.md#全程安排) |
+| 行程体检 | `health` | 检查当前或文字计划；预览修复后确认 | [modules.md § 行程体检](./modules.md#行程体检) · [health.md](./health.md) |
 | 我的预订 | `bookings` | 录入已购项目，锁定时段 | [modules.md § 我的预订](./modules.md#我的预订) |
 | 背景手册 | `handbook` | 出发清单、地点背景、交通与常用语 | [modules.md § 背景手册](./modules.md#背景手册) |
 | 每日行动卡 | `today` | 按天执行；侧栏重排；导出当日 PNG | [modules.md § 每日行动卡](./modules.md#每日行动卡) |
@@ -22,7 +23,7 @@ TripWhisper 是面向中文用户的 **米兰 + 科莫湖 3—5 天** 旅行工�
 侧栏「计划跟着你走」挂在每日卡上，不是独立标签。规则见 [replan.md](./replan.md)。
 
 ```text
-行前：旅行偏好 → 认识目的地 → 全程安排 / 我的预订 / 背景手册
+行前：旅行偏好 → 认识目的地 → 全程安排 / 行程体检 / 我的预订 / 背景手册
 行中：每日行动卡（含重排）→ 旅行账本
 行后：旅行回顾（偏好可再带回「旅行偏好」重新生成）
 ```
@@ -83,19 +84,22 @@ app/page.tsx                    标签页、共享状态、生成、本机存取
 app/layout.tsx                  页面标题与中文 lang
 app/globals.css                 工作台样式
 
-components/travel/bookings.tsx  预订录入 / 预览确认 / 移除 / 只读体检
+components/travel/bookings.tsx  预订录入 / 预览确认 / 移除 / 只读体检摘要
 components/travel/budget.tsx    账本 UI
 components/travel/handbook.tsx  手册四章
 components/travel/replan.tsx    晚出门 / 少走路 / 下雨 预览确认、恢复上一版
+components/travel/health.tsx    文字计划 / 当前行程体检、修复预览确认
 
 lib/journey.ts                  类型、示范地点、generate、adjust（下雨）、estimate
 lib/replan.ts                   受约束重排预览（不写当前行程）
+lib/health.ts                   体检检测、文字解析、修复预览（不写当前行程）
 lib/workspace.ts                预订冲突、带预订再生成、账本、auditJourney
 lib/export-card.ts              当日行程 PNG（画布绘制，不是截图）
 
 tests/journey.test.mjs          生成、锁定、兴趣、下雨/休息不改锁定项
 tests/workspace.test.mjs        预订保留、缓冲、金额
 tests/replan.test.mjs           预览隔离、锁定交通、顺延/压缩/移除
+tests/health.test.mjs           体检检测、解析隔离、预览确认不覆盖原行程
 ```
 
 `components/ui/` 是通用控件，不含旅行业务规则。
@@ -104,10 +108,9 @@ tests/replan.test.mjs           预览隔离、锁定交通、顺延/压缩/移�
 
 | 缺口 | Issue |
 | --- | --- |
-| 行程体检 → 修复建议 → 确认应用 | [#4](https://github.com/3013038780-design/TripWhisper/issues/4) |
 | 地点来源、核验时间、演示/用户数据可区分 | [#5](https://github.com/3013038780-design/TripWhisper/issues/5) |
 | 服务端编排、密钥、跨设备恢复 | [#6](https://github.com/3013038780-design/TripWhisper/issues/6) |
 | EvoMap OAuth / 检索 / 复用工作流 | [#7](https://github.com/3013038780-design/TripWhisper/issues/7) |
 | 多版本历史与任意回退 | [#9](https://github.com/3013038780-design/TripWhisper/issues/9) |
 
-受约束重排（[#3](https://github.com/3013038780-design/TripWhisper/issues/3)）已合入，规则以 [replan.md](./replan.md) 为准。
+受约束重排（[#3](https://github.com/3013038780-design/TripWhisper/issues/3)）已合入，规则以 [replan.md](./replan.md) 为准。行程体检与修复闭环（[#4](https://github.com/3013038780-design/TripWhisper/issues/4)）已合入，规则以 [health.md](./health.md) 为准。

@@ -9,6 +9,7 @@ import { Budget } from '@/components/travel/budget';
 import { Bookings } from '@/components/travel/bookings';
 import { Handbook } from '@/components/travel/handbook';
 import { ReplanPanel } from '@/components/travel/replan';
+import { HealthPanel } from '@/components/travel/health';
 import {
   regenerateWithBookings,
   safeExpense,
@@ -333,12 +334,25 @@ export default function Home() {
             <TabsTrigger value="profile">旅行偏好</TabsTrigger>
             <TabsTrigger value="explore">认识目的地</TabsTrigger>
             <TabsTrigger value="plan">全程安排</TabsTrigger>
+            <TabsTrigger value="health">行程体检</TabsTrigger>
             <TabsTrigger value="bookings">我的预订</TabsTrigger>
             <TabsTrigger value="handbook">背景手册</TabsTrigger>
             <TabsTrigger value="today">每日行动卡</TabsTrigger>
             <TabsTrigger value="budget">旅行账本</TabsTrigger>
             <TabsTrigger value="memory">旅行回顾</TabsTrigger>
           </TabsList>
+          <TabsContent value="health" keepMounted>
+            <HealthPanel
+              journey={journey}
+              onApply={(next) => {
+                setPrevious(journey);
+                setJourney(next);
+                setProfile(next.profile);
+                setMessage('体检修复已应用，总行程、每日卡与预算已同步。');
+              }}
+              onOpenPlan={() => setTab('plan')}
+            />
+          </TabsContent>
           <TabsContent value="bookings">
             <Bookings
               journey={journey}
@@ -347,6 +361,7 @@ export default function Home() {
                 setJourney(next);
                 setMessage('预订记录已更新，行程与每日卡已同步。');
               }}
+              onOpenHealth={() => setTab('health')}
             />
           </TabsContent>
           <TabsContent value="handbook">
@@ -552,6 +567,13 @@ export default function Home() {
                   )}
                   <button className="secondary" onClick={exportTrip}>
                     导出本机旅行备份
+                  </button>
+                  <button
+                    className="secondary"
+                    style={{ marginTop: 10 }}
+                    onClick={() => setTab('health')}
+                  >
+                    去行程体检
                   </button>
                 </section>
               </aside>

@@ -2,18 +2,17 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { dateAt, type Journey } from '@/lib/journey';
-import {
-  previewBooking,
-  type BookingInput,
-  auditJourney,
-} from '@/lib/workspace';
+import { previewBooking, type BookingInput } from '@/lib/workspace';
+import { inspectJourney } from '@/lib/health';
 import { LockKeyhole, Plus, ArrowRight } from 'lucide-react';
 export function Bookings({
   journey,
   onApply,
+  onOpenHealth,
 }: {
   journey: Journey;
   onApply: (j: Journey) => void;
+  onOpenHealth?: () => void;
 }) {
   const [form, setForm] = useState<BookingInput>({
     date: journey.profile.date,
@@ -240,11 +239,17 @@ export function Bookings({
         </section>
         <section className="panel">
           <h3>行程体检</h3>
-          {auditJourney(journey).map((v, i) => (
-            <p className="note" key={i}>
-              · {v}
+          {inspectJourney(journey).map((f) => (
+            <p className="note" key={f.id}>
+              · {f.title}
             </p>
           ))}
+          <p className="note">只读摘要。修复建议、预览和确认在「行程体检」。 </p>
+          {onOpenHealth && (
+            <button className="secondary" onClick={onOpenHealth}>
+              去行程体检处理
+            </button>
+          )}
         </section>
       </aside>
     </div>

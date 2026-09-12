@@ -97,7 +97,7 @@
 - 「检查并预览」→ 冲突说明 →「确认加入并锁定」。
 - 侧栏列出所有 `locked` 项：区分「你录入的预订」与「模拟预订」。
 - 仅用户录入项可「从行程移除」（二次确认）。明确写：不取消、不退款。
-- 侧栏「行程体检」只读列出 `auditJourney` 发现。
+- 侧栏「行程体检」只读列出 `inspectJourney` 的标题，并可跳到「行程体检」做修复。
 
 **关键规则**
 
@@ -109,13 +109,44 @@
 - 链接必须是合法 `https:`；拒绝 `javascript:` 等。
 - 再生成时按**绝对日期 + 原时段**保留用户预订（见上一模块）。
 - 移除只删行程记录，`version++`，并写入 `previous`。
-- **行程体检现状**：缺住宿文本、相邻 stop 衔接不足 15 分钟、科莫日缺返程 `id === 'return'`，并固定提示天气 / 开放 / 余票未自动核验。没有「选修复 → 确认应用」。补闭环见 [Issue #4](https://github.com/3013038780-design/TripWhisper/issues/4)，本文不实现。
+- **行程体检**：本页只读摘要。完整闭环（文字计划、依据、建议、预览确认）见 [行程体检](#行程体检) 与 [health.md](./health.md)。
 
 **代码路径**
 
 - `components/travel/bookings.tsx`
 - `lib/workspace.ts`（`previewBooking`、`regenerateWithBookings`、`auditJourney`）
+- 只读标题：`lib/health.ts`（`inspectJourney`）
 - 状态写回：`app/page.tsx`（`onApply` → `setPrevious` + `setJourney`）
+
+---
+
+## 行程体检
+
+**目的**：对当前行程或粘贴 / 编辑的文字计划做规则检查，列出依据与可执行修复，先预览再确认。确认才写入同一份 `journey`。
+
+**主要交互**
+
+- 「检查当前行程」：直接检查正在使用的 Journey。
+- 文本框可编辑当前计划的序列化结果，或粘贴新计划；「用这段文字检查」先解析再检查。解析失败只报错，不改原行程。
+- 「载入示例问题」放入一段含重叠 / 缓冲不足 / 锁定冲突 / 空住宿的示范文本，仍不写行程。
+- 每条可修复问题可勾选；「预览选中修复」给出改动、取舍、修复后仍在的问题。
+- 「确认应用」才 `setPrevious` + `setJourney`；「取消」只关预览。
+- 「我的预订」侧栏与「全程安排」侧栏可跳到本页。
+
+**关键规则**
+
+- 详见 [health.md](./health.md)。至少检测：时间重叠、缓冲不足（15 分钟）、锁定预订 / 交通冲突、住宿缺失。
+- 已订与 `kind === '交通'` 不会被自动移动。两项都锁定且冲突时，只说明、不改时段。
+- 文字未写到的天保持原安排。住宿写入只是文本记录，不算路。
+- 预览对入参 `structuredClone`；`baseVersion !== journey.version` 时丢弃预览。
+- 天气 / 开放 / 余票仍是待核验提示，不能自动修复。不是实时事实。
+
+**代码路径**
+
+- UI：`components/travel/health.tsx`
+- 规则：`lib/health.ts`（`inspectJourney`、`parsePlanText`、`previewHealthFixes`）
+- 挂载：`app/page.tsx`（`health`）
+- 回归：`tests/health.test.mjs`
 
 ---
 
@@ -242,7 +273,7 @@
 - schema `1`。写入字段：`journey`、`memories`、`saved`、`expenses`、`checks`。
 - **不写入** `previous`、当前标签、当前天。刷新后不能恢复上一版。
 - 无登录、无多设备同步。清除站点数据即丢失。云端与跨浏览器恢复见 [Issue #6](https://github.com/3013038780-design/TripWhisper/issues/6)。
-- 下列确认会 `setPrevious(当前)` 再替换 `journey`（并 `version++`）：生成、加入/移除预订、确认重排、确认下雨调整。
+- 下列确认会 `setPrevious(当前)` 再替换 `journey`（并 `version++`）：生成、加入/移除预订、确认重排、确认下雨调整、确认体检修复。
 - 恢复：`journey` / `profile` 回到 `previous`，然后清空 `previous`（只能退一层）。**不会**再 `version++`。
 - 连续确认多次后，中间版本不可点选。多版本历史见 [Issue #9](https://github.com/3013038780-design/TripWhisper/issues/9)。
 

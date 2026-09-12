@@ -21,6 +21,7 @@
 1. [overview.md](./overview.md) — 信息架构、标签页、共享数据、演示 vs 实时事实、代码地图
 2. [modules.md](./modules.md) — 各模块：目的、主要交互、关键规则、代码路径
 3. [replan.md](./replan.md) — 受约束重排（晚出门 / 少走路 / 下雨）：预览确认、锁定、取舍、版本
+4. [health.md](./health.md) — 行程体检与修复：文字计划、四类问题、预览确认、失败不覆盖
 
 ## 更新节奏（必守）
 
@@ -52,4 +53,4 @@
 3. 规则数字（缓冲 15 分钟、延后 0—180、当天截止 21:00 等）以 `lib/` 常量为准。
 4. 未实现的能力链到对应 Issue，不要写成即将上线。
 
-当前实现范围的摘要见 [overview.md](./overview.md)。受约束重排细节见 [replan.md](./replan.md)。
+当前实现范围的摘要见 [overview.md](./overview.md)。受约束重排细节见 [replan.md](./replan.md)。行程体检细节见 [health.md](./health.md)。

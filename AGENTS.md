@@ -24,6 +24,8 @@
   - `npx tsc --noEmit`
   - `node --experimental-strip-types tests/journey.test.mjs`
   - `node tests/workspace.test.mjs`
+  - `node tests/replan.test.mjs`
+  - `node tests/health.test.mjs`
   - `npm run build`
 - 在 PR 中说明任何未运行的命令和原因；不得把未运行的检查描述为已通过。
 - 修改的用户流程需要浏览器测试时，使用 `npm run dev` 进行本地人工验证。

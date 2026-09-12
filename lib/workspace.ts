@@ -5,6 +5,7 @@ import {
   type Profile,
   generate,
 } from './journey';
+import { inspectJourney } from './health';
 export type BookingInput = {
   date: string;
   name: string;
@@ -99,21 +100,7 @@ export function regenerateWithBookings(
   return next;
 }
 export function auditJourney(j: Journey) {
-  const findings: string[] = [];
-  if (!j.profile.hotel.trim())
-    findings.push('住宿位置尚未填写，出发与返程路线需补充。');
-  j.days.forEach((d, i) => {
-    for (let n = 1; n < d.stops.length; n++) {
-      if (timeMinutes(d.stops[n].time) - timeMinutes(d.stops[n - 1].end) < 15)
-        findings.push(
-          `第 ${i + 1} 天 ${d.stops[n].time} 前的衔接少于 15 分钟，请核实交通。`,
-        );
-    }
-    if (d.city === 'COMO' && !d.stops.some((s) => s.id === 'return'))
-      findings.push(`第 ${i + 1} 天缺少返回米兰的安排。`);
-  });
-  findings.push('天气、实际开放时间与余票尚未自动核验。');
-  return findings;
+  return inspectJourney(j).map((f) => f.title);
 }
 export function parseMoney(value: string): number {
   if (!/^\d{1,7}(\.\d{1,2})?$/.test(value))
